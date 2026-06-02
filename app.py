@@ -10,16 +10,24 @@ st.set_page_config(page_title="PGI 3-Model Forecasting", layout="wide")
 st.title("📊 Simulasi Perbandingan 3 Model Forecasting Omzet PGI")
 st.write("Masukkan indikator calon lokasi cabang baru untuk melihat perbandingan prediksi dari model OLS, Random Forest, dan GWR Spasial.")
 
-# 1. Load Assets
+# 1. Load Objek Model dengan Caching Aman
 @st.cache_resource
-def load_assets():
-    rf_model = joblib.load('rf_model.pkl')
-    ols_model = joblib.load('ols_model.pkl')
-    scaler = joblib.load('scaler.pkl')
-    df_ref = joblib.load('df_spatial_reference.pkl')
-    return rf_model, ols_model, scaler, df_ref
+def load_all_models():
+    # Menggunakan path relatif yang aman untuk Streamlit Cloud
+    model_rf = joblib.load('rf_model.pkl')
+    scaler_rf = joblib.load('scaler_rf.pkl')
+    model_ols = joblib.load('ols_model.pkl')
+    scaler_ols = joblib.load('scaler_ols.pkl')
+    gwr_metadata = joblib.load('gwr_stats.pkl')
+    return model_rf, scaler_rf, model_ols, scaler_ols, gwr_metadata
 
-rf_model, ols_model, scaler, df_ref = load_assets()
+# PANGGIL DENGAN JUMLAH VARIABEL YANG SAMA (5 VARIABEL)
+try:
+    rf_model, scaler_rf, ols_model, scaler_ols, gwr_meta = load_all_models()
+    df_ref = gwr_meta['df_spatial_reference']
+except Exception as e:
+    st.error(f"Gagal memuat komponen model (.pkl). Pastikan semua file pkl sudah di-upload di root repository GitHub. Detail: {e}")
+    st.stop()
 
 # 2. Layout Form Input (Dibagi menjadi 2 Kolom Besar)
 st.markdown("### 📝 Input Parameter Cabang Baru")
