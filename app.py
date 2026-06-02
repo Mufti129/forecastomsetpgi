@@ -33,7 +33,7 @@ try:
     rf_model, scaler_rf, ols_model, scaler_ols, gwr_meta = load_all_models()
     df_ref = gwr_meta['df_spatial_reference']
 except Exception as e:
-    st.error(f"Gagal memuat komponen model (.pkl). Pastikan semua file pkl sudah di-upload di root repository GitHub Anda. Detail Error: {e}")
+    st.error(f"Gagal memuat komponen model (.pkl). File pkl sudah di-upload di root repository GitHub. Detail Error: {e}")
     st.stop()
 
 
@@ -47,7 +47,7 @@ menu_terpilih = st.sidebar.radio(
 )
 
 st.sidebar.markdown("---")
-st.sidebar.caption("Sistem Forecasting Omzet Cabang PGI © 2026")
+st.sidebar.caption("Data Analytics © 2026")
 
 
 # ========================================================
@@ -177,7 +177,7 @@ elif menu_terpilih == "Performa & Evaluasi Model":
         c1, c2, c3 = st.columns(3)
         c1.metric(label="R-squared (R²)", value="0.2179")
         c2.metric(label="MAE", value="Rp 160.364.206,25")
-        c3.metric(label="RMSE", value="Rp 246.962.146,72")
+        #c3.metric(label="RMSE", value="Rp 246.962.146,72")
         
         st.warning("**Catatan Evaluasi:** Nilai R² yang cenderung rendah (21,79%) membuktikan hubungan faktor pembuat omzet antar wilayah bersifat non-linear dan heterogen spasi, sehingga kurang disarankan sebagai acuan tunggal.")
 
@@ -226,7 +226,7 @@ elif menu_terpilih == "Performa & Evaluasi Model":
         g3.metric(label="AICc", value="1.975,26")
         g4.metric(label="RMSE Spasial", value="Rp 207.524.678,53")
         
-        st.success("**Kesimpulan Performa Terbaik:** GWR menghasilkan peningkatan akurasi tertinggi dengan nilai **R² mencapai 34,80%**. Hal ini menunjukkan bahwa faktor lokasi geografis memegang peran sangat penting dalam akurasi bisnis retail.")
+        st.success("**Kesimpulan Performa Terbaik:** GWR menghasilkan peningkatan akurasi tertinggi dengan nilai **R² mencapai 34,80%**. Hal ini menunjukkan bahwa faktor lokasi geografis memegang peran sangat penting dalam akurasi bisnis.")
         
         st.markdown("#### Interpretasi Hasil Analisis Spasial")
         st.info("Sistem mendeteksi adanya **766 set koefisien lokal unik** untuk setiap lokasi cabang historis yang diteliti. Artinya, setiap daerah memiliki sensitivitas pengaruh variabel yang berbeda-beda.")
