@@ -8,7 +8,7 @@ import os
 
 st.set_page_config(page_title="PGI 3-Model Forecasting", layout="wide")
 
-st.title("📊 Aplikasi Simulasi Perbandingan 3 Model Forecasting Omzet PGI")
+st.title("Aplikasi Simulasi Perbandingan 3 Model Forecasting Omzet PGI")
 st.write("Sistem ini membandingkan hasil model OLS, Random Forest, dan Koreksi Spasial GWR secara instan untuk membantu analisis ekspansi cabang.")
 
 # ========================================================
@@ -37,13 +37,13 @@ try:
     rf_model, scaler_rf, ols_model, scaler_ols, gwr_meta = load_all_models()
     df_ref = gwr_meta['df_spatial_reference']
 except Exception as e:
-    st.error(f"⚠️ Gagal memuat komponen model (.pkl). Pastikan semua file pkl sudah di-upload di root repository GitHub Anda. Detail Error: {e}")
+    st.error(f"Gagal memuat komponen model (.pkl). Pastikan semua file pkl sudah di-upload di root repository GitHub Anda. Detail Error: {e}")
     st.stop()
 
 # ========================================================
 # 2. FORM INPUT UTAMA PENGGUNA (UI LAYOUT)
 # ========================================================
-st.markdown("### 📝 Masukkan Parameter Karakteristik Cabang Baru")
+st.markdown("### Masukkan Parameter Karakteristik Cabang Baru")
 with st.form("simulation_form"):
     col1, col2 = st.columns(2)
     with col1:
@@ -69,7 +69,7 @@ with st.form("simulation_form"):
         tipe_jalan = st.selectbox("Jenis Akses Jalan Utama", ["primary", "residential", "tertiary", "secondary", "living_street", "trunk"])
         jalan_mapped = {"primary": 0, "residential": 1, "tertiary": 2, "secondary": 3, "living_street": 4, "trunk": 5}[tipe_jalan]
 
-    submitted = st.form_submit_button("🚀 Jalankan Kalkulasi Prediksi", type="primary")
+    submitted = st.form_submit_button("Jalankan Kalkulasi Prediksi", type="primary")
 
 # ========================================================
 # 3. PROSES KALKULASI PREDIKSI SAAT TOMBOL DITEKAN
@@ -145,7 +145,7 @@ if submitted:
     # 4. VISUALISASI HASIL AKHIR (UI DASHBOARD CARDS)
     # ========================================================
     st.markdown("---")
-    st.subheader("🎯 Hasil Estimasi Komparasi Omzet Bulanan")
+    st.subheader("Hasil Estimasi Komparasi Omzet Bulanan")
     
     m_col1, m_col2, m_col3 = st.columns(3)
     with m_col1:
@@ -158,4 +158,4 @@ if submitted:
         st.metric(label="3. Spasial GWR Hasil Koreksi", value=f"Rp {pred_omzet_gwr:,.2f}".replace(",", "."))
         st.caption(f"Berbasis bobot geografis lokal dari titik terdekat: **{cabang_terdekat['nama_cabang']}** (Jarak: {jarak_km:.2f} km).")
 
-    st.info("💡 **Petunjuk Analisis Manajemen:** Model GWR memberikan estimasi terbaik berdasarkan realita kedekatan fisik wilayah retail, sementara Random Forest unggul dalam ketajaman logika matematis kombinasi variabel.")
+    st.info("**Petunjuk Analisis Manajemen:** Model GWR memberikan estimasi terbaik berdasarkan realita kedekatan fisik wilayah retail, sementara Random Forest unggul dalam ketajaman logika matematis kombinasi variabel.")
