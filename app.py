@@ -4,21 +4,32 @@ import numpy as np
 import joblib
 from scipy.spatial.distance import cdist
 from pyproj import Transformer
-
+import os
 st.set_page_config(page_title="PGI 3-Model Forecasting", layout="wide")
 
 st.title("📊 Simulasi Perbandingan 3 Model Forecasting Omzet PGI")
 st.write("Masukkan indikator calon lokasi cabang baru untuk melihat perbandingan prediksi dari model OLS, Random Forest, dan GWR Spasial.")
 
-# 1. Load Objek Model dengan Caching Aman
+# 1. Load Objek Model dengan Caching dan Jalur Absolut yang Aman
 @st.cache_resource
 def load_all_models():
-    # Menggunakan path relatif yang aman untuk Streamlit Cloud
-    model_rf = joblib.load('rf_model.pkl')
-    scaler_rf = joblib.load('scaler_rf.pkl')
-    model_ols = joblib.load('ols_model.pkl')
-    scaler_ols = joblib.load('scaler_ols.pkl')
-    gwr_metadata = joblib.load('gwr_stats.pkl')
+    # Mengambil jalur folder absolut tempat file app.py ini berada di server
+    dir_sekarang = os.path.dirname(os.path.abspath(__file__))
+    
+    # Menggabungkan folder tersebut dengan nama masing-masing file .pkl
+    path_rf = os.path.join(dir_sekarang, 'rf_model.pkl')
+    path_scaler_rf = os.path.join(dir_sekarang, 'scaler_rf.pkl')
+    path_ols = os.path.join(dir_sekarang, 'ols_model.pkl')
+    path_scaler_ols = os.path.join(dir_sekarang, 'scaler_ols.pkl')
+    path_gwr = os.path.join(dir_sekarang, 'gwr_stats.pkl')
+    
+    # Memuat berkas menggunakan jalur absolut yang sudah pasti benar
+    model_rf = joblib.load(path_rf)
+    scaler_rf = joblib.load(path_scaler_rf)
+    model_ols = joblib.load(path_ols)
+    scaler_ols = joblib.load(path_scaler_ols)
+    gwr_metadata = joblib.load(path_gwr)
+    
     return model_rf, scaler_rf, model_ols, scaler_ols, gwr_metadata
 
 # PANGGIL DENGAN JUMLAH VARIABEL YANG SAMA (5 VARIABEL)
