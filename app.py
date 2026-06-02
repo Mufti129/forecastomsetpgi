@@ -33,17 +33,17 @@ try:
     rf_model, scaler_rf, ols_model, scaler_ols, gwr_meta = load_all_models()
     df_ref = gwr_meta['df_spatial_reference']
 except Exception as e:
-    st.error(f"⚠️ Gagal memuat komponen model (.pkl). Pastikan semua file pkl sudah di-upload di root repository GitHub Anda. Detail Error: {e}")
+    st.error(f"Gagal memuat komponen model (.pkl). Pastikan semua file pkl sudah di-upload di root repository GitHub Anda. Detail Error: {e}")
     st.stop()
 
 
 # ========================================================
 # 2. NAVIGASI UTAMA (SIDEBAR MENU)
 # ========================================================
-st.sidebar.title("🎮 Navigasi Aplikasi")
+st.sidebar.title("Navigasi Aplikasi")
 menu_terpilih = st.sidebar.radio(
     "Pilih Menu Halaman:",
-    ["🔮 Simulasi Cabang Baru", "📊 Performa & Evaluasi Model"]
+    ["Simulasi Cabang Baru", "Performa & Evaluasi Model"]
 )
 
 st.sidebar.markdown("---")
@@ -53,11 +53,11 @@ st.sidebar.caption("Sistem Forecasting Omzet Cabang PGI © 2026")
 # ========================================================
 # HALAMAN 1: SIMULASI CABANG BARU
 # ========================================================
-if menu_terpilih == "🔮 Simulasi Cabang Baru":
-    st.title("📊 Aplikasi Simulasi Perbandingan 3 Model Forecasting Omzet PGI")
+if menu_terpilih == "Simulasi Cabang Baru":
+    st.title("Aplikasi Simulasi Perbandingan 3 Model Forecasting Omzet PGI")
     st.write("Sistem ini membandingkan hasil model OLS, Random Forest, dan Koreksi Spasial GWR secara instan untuk membantu analisis ekspansi cabang.")
 
-    st.markdown("### 📝 Masukkan Parameter Karakteristik Cabang Baru")
+    st.markdown("### Masukkan Parameter Karakteristik Cabang Baru")
     with st.form("simulation_form"):
         col1, col2 = st.columns(2)
         with col1:
@@ -83,7 +83,7 @@ if menu_terpilih == "🔮 Simulasi Cabang Baru":
             tipe_jalan = st.selectbox("Jenis Akses Jalan Utama", ["primary", "residential", "tertiary", "secondary", "living_street", "trunk"])
             jalan_mapped = {"primary": 0, "residential": 1, "tertiary": 2, "secondary": 3, "living_street": 4, "trunk": 5}[tipe_jalan]
 
-        submitted = st.form_submit_button("🚀 Jalankan Kalkulasi Prediksi", type="primary")
+        submitted = st.form_submit_button("Jalankan Kalkulasi Prediksi", type="primary")
 
     if submitted:
         # --- Feature Engineering Instan ---
@@ -139,7 +139,7 @@ if menu_terpilih == "🔮 Simulasi Cabang Baru":
 
         # VISUALISASI HASIL AKHIR
         st.markdown("---")
-        st.subheader("🎯 Hasil Estimasi Komparasi Omzet Bulanan")
+        st.subheader("Hasil Estimasi Komparasi Omzet Bulanan")
         
         m_col1, m_col2, m_col3 = st.columns(3)
         with m_col1:
@@ -152,21 +152,21 @@ if menu_terpilih == "🔮 Simulasi Cabang Baru":
             st.metric(label="3. Spasial GWR Hasil Koreksi", value=f"Rp {pred_omzet_gwr:,.2f}".replace(",", "."))
             st.caption(f"Berbasis bobot geografis lokal dari titik terdekat: **{cabang_terdekat['nama_cabang']}** (Jarak: {jarak_km:.2f} km).")
 
-        st.info("💡 **Petunjuk Analisis Manajemen:** Model GWR memberikan estimasi terbaik berdasarkan realita kedekatan fisik wilayah retail, sementara Random Forest unggul dalam ketajaman logika matematis kombinasi variabel.")
+        st.info("**Petunjuk Analisis Manajemen:** Model GWR memberikan estimasi terbaik berdasarkan realita kedekatan fisik wilayah retail, sementara Random Forest unggul dalam ketajaman logika matematis kombinasi variabel.")
 
 
 # ========================================================
-# HALAMAN 2: PERFORMA & EVALUASI MODEL (MENU BARU ✨)
+# HALAMAN 2: PERFORMA & EVALUASI MODEL (MENU BARU)
 # ========================================================
-elif menu_terpilih == "📊 Performa & Evaluasi Model":
-    st.title("📊 Laporan Metrik Performa & Evaluasi Pemodelan")
+elif menu_terpilih == "Performa & Evaluasi Model":
+    st.title("Laporan Metrik Performa & Evaluasi Pemodelan")
     st.write("Halaman ini menyajikan validasi hasil evaluasi matematis dan statistik untuk ketiga arsitektur model berdasarkan data historis.")
     
     # Membuat 3 Tabs untuk masing-masing model agar rapi
     tab_ols, tab_rf, tab_gwr = st.tabs([
-        "📉 1. Baseline MLR (OLS)", 
-        "🌲 2. Random Forest Regressor", 
-        "🗺️ 3. Geographically Weighted Regression (GWR)"
+        " 1. Baseline MLR (OLS)", 
+        " 2. Random Forest Regressor", 
+        " 3. Geographically Weighted Regression (GWR)"
     ])
     
     # --- TAB OLS ---
@@ -179,7 +179,7 @@ elif menu_terpilih == "📊 Performa & Evaluasi Model":
         c2.metric(label="MAE", value="Rp 160.364.206,25")
         c3.metric(label="RMSE", value="Rp 246.962.146,72")
         
-        st.warning("⚠️ **Catatan Evaluasi:** Nilai R² yang cenderung rendah (21,79%) membuktikan hubungan faktor pembuat omzet antar wilayah bersifat non-linear dan heterogen spasi, sehingga kurang disarankan sebagai acuan tunggal.")
+        st.warning("**Catatan Evaluasi:** Nilai R² yang cenderung rendah (21,79%) membuktikan hubungan faktor pembuat omzet antar wilayah bersifat non-linear dan heterogen spasi, sehingga kurang disarankan sebagai acuan tunggal.")
 
     # --- TAB RANDOM FOREST ---
     with tab_rf:
@@ -190,7 +190,7 @@ elif menu_terpilih == "📊 Performa & Evaluasi Model":
         rf1.metric(label="Final Optimized R-squared", value="0.2675")
         rf2.metric(label="Mean Absolute Error (MAE)", value="Rp 154.615.822,10")
         
-        st.subheader("💡 Variabel Paling Berpengaruh (Feature Importance)")
+        st.subheader("Variabel Paling Berpengaruh (Feature Importance)")
         st.write("Menunjukkan tingkat kontribusi bobot dari setiap indikator dalam membentuk keputusan prediksi.")
         
         # Menyusun data Importance dari riset Anda ke DataFrame
@@ -226,12 +226,12 @@ elif menu_terpilih == "📊 Performa & Evaluasi Model":
         g3.metric(label="AICc", value="1.975,26")
         g4.metric(label="RMSE Spasial", value="Rp 207.524.678,53")
         
-        st.success("📈 **Kesimpulan Performa Terbaik:** GWR menghasilkan peningkatan akurasi tertinggi dengan nilai **R² mencapai 34,80%**. Hal ini menunjukkan bahwa faktor lokasi geografis memegang peran sangat penting dalam akurasi bisnis retail.")
+        st.success("**Kesimpulan Performa Terbaik:** GWR menghasilkan peningkatan akurasi tertinggi dengan nilai **R² mencapai 34,80%**. Hal ini menunjukkan bahwa faktor lokasi geografis memegang peran sangat penting dalam akurasi bisnis retail.")
         
-        st.markdown("#### 🗺️ Interpretasi Hasil Analisis Spasial")
+        st.markdown("#### Interpretasi Hasil Analisis Spasial")
         st.info("Sistem mendeteksi adanya **766 set koefisien lokal unik** untuk setiap lokasi cabang historis yang diteliti. Artinya, setiap daerah memiliki sensitivitas pengaruh variabel yang berbeda-beda.")
         
-        st.markdown("#### 🧮 Rata-rata Nilai Koefisien Lokal (Beta Intercept):")
+        st.markdown("#### Rata-rata Nilai Koefisien Lokal (Beta Intercept):")
         
         coef_data = {
             'Nama Parameter/Variabel': [
