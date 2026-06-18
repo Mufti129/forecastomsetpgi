@@ -146,7 +146,7 @@ if menu_terpilih == "Simulasi Cabang Baru":
     # --- OPSI 1: UPLOAD BATCH ---
     if metode_input == "Upload File Batch (Banyak Data)":
         st.markdown("### Prediksi Batch Massal via File CSV / Excel")
-        st.write("Unggah file data mining Anda. Sistem otomatis mencocokkan kolom koordinat (`lat`/`lon`), nama cabang (`nama_cabang`), dan target riil (`avg_omzet`) jika tersedia.")
+        st.write("Unggah file data mining")
         
         file_diunggah = st.file_uploader("Pilih file CSV atau Excel:", type=['csv', 'xlsx'])
         
