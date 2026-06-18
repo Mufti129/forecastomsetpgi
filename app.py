@@ -133,7 +133,7 @@ st.sidebar.caption("Data Analytics © 2026")
 # HALAMAN 1: SIMULASI CABANG BARU (BISA BATCH ATAU MANUAL)
 # ========================================================
 if menu_terpilih == "Simulasi Cabang Baru":
-    st.title("Aplikasi Simulasi Perbandingan 3 Model Forecasting Omzet PGI")
+    st.title("Simulasi Perbandingan 3 Model Forecasting Omzet PGI")
     st.write("Sistem ini membandingkan hasil model OLS, Random Forest, dan Koreksi Spasial GWR untuk analisis ekspansi cabang.")
 
     # Tombol pilihan metode input agar pengguna bisa memilih fleksibel
@@ -145,7 +145,7 @@ if menu_terpilih == "Simulasi Cabang Baru":
 
     # --- OPSI 1: UPLOAD BATCH ---
     if metode_input == "Upload File Batch (Banyak Data)":
-        st.markdown("### 📊 Prediksi Batch Massal via File CSV / Excel")
+        st.markdown("### Prediksi Batch Massal via File CSV / Excel")
         st.write("Unggah file data mining Anda. Sistem otomatis mencocokkan kolom koordinat (`lat`/`lon`), nama cabang (`nama_cabang`), dan target riil (`avg_omzet`) jika tersedia.")
         
         file_diunggah = st.file_uploader("Pilih file CSV atau Excel:", type=['csv', 'xlsx'])
@@ -166,7 +166,7 @@ if menu_terpilih == "Simulasi Cabang Baru":
                         df_hasil = hitung_prediksi_batch(df_batch, ols_model, scaler_ols, rf_model, scaler_rf, gwr_meta, df_ref)
                     
                     st.markdown("---")
-                    st.subheader("📋 Hasil Komparasi Evaluasi Omzet")
+                    st.subheader("Hasil Komparasi Evaluasi Omzet")
                     
                     # Menyusun struktur kolom output tampilan
                     kolom_output = []
@@ -197,7 +197,7 @@ if menu_terpilih == "Simulasi Cabang Baru":
                     st.dataframe(df_hasil[kolom_output].style.format(format_dict), use_container_width=True)
                     
                     st.download_button(
-                        label="📥 Unduh Hasil Prediksi Lengkap (.CSV)",
+                        label="Unduh Hasil Prediksi Lengkap (.CSV)",
                         data=df_hasil.to_csv(index=False).encode('utf-8'),
                         file_name='hasil_prediksi_3model_batch.csv',
                         mime='text/csv'
@@ -207,7 +207,7 @@ if menu_terpilih == "Simulasi Cabang Baru":
 
     # --- OPSI 2: INPUT MANUAL (TIDAK DIHILANGKAN, PERSIS SEPERTI VERSI AWAL) ---
     else:
-        st.markdown("### ✍️ Masukkan Parameter Karakteristik Cabang Secara Manual")
+        st.markdown("### Masukkan Parameter Karakteristik Cabang Secara Manual")
         with st.form("simulation_form"):
             col1, col2 = st.columns(2)
             with col1:
