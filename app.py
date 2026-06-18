@@ -30,7 +30,7 @@ def load_all_models():
     return model_rf, scaler_rf, model_ols, scaler_ols, gwr_metadata
 
 try:
-    rf_model, scaler_rf, model_ols, scaler_ols, gwr_meta = load_all_models()
+    rf_model, scaler_rf, ols_model, scaler_ols, gwr_meta = load_all_models()
     df_ref = gwr_meta['df_spatial_reference']
 except Exception as e:
     st.error(f"Gagal memuat komponen model (.pkl). File pkl sudah di-upload di root repository GitHub. Detail Error: {e}")
@@ -38,12 +38,12 @@ except Exception as e:
 
 
 # ========================================================
-# FUNGSIONALITAS UTAMA PREDIKSI (Fungsi Helper untuk Batch/Single)
+# 2. FUNGSIONALITAS UTAMA PREDIKSI (Fungsi Helper Eksternal)
 # ========================================================
-def hitung_prediksi_batch(df_input):
+def hitung_prediksi_batch(df_input, ols_model, scaler_ols, rf_model, scaler_rf, gwr_meta, df_ref):
     """
     Menerima DataFrame input mentah dengan kolom-kolom yang sesuai,
-    mengembalikan DataFrame yang sudah terisi hasil prediksi OLS, RF, dan GWR.
+    serta semua objek model pasca-load untuk menghindari NameError scope.
     """
     df_res = df_input.copy()
     
@@ -61,12 +61,13 @@ def hitung_prediksi_batch(df_input):
     df_res['premium_spot_score'] = df_res['lebar_ruko'] * df_res['umk']
     df_res['comp_per_pop'] = df_res['jumlah_kompetitor'] / (df_res['penduduk'] + 1)
     
-    # 1. PREDIKSI MODEL OLS
+    # 1. PREDIKSI MODEL OLS (Menggunakan internal .predict() statsmodels agar lebih aman)
     X_ols_raw = df_res[gwr_meta['features_final']].copy()
     X_ols_scaled = scaler_ols.transform(X_ols_raw)
     X_ols_df = pd.DataFrame(X_ols_scaled, columns=gwr_meta['features_final'])
     X_ols_const = np.hstack([np.ones((len(X_ols_df), 1)), X_ols_df.values])
-    preds_ols = np.dot(X_ols_const, ols_model.params)
+    
+    preds_ols = ols_model.predict(X_ols_const)
     df_res['Prediksi_Omzet_OLS'] = np.clip(preds_ols, 0, None)
 
     # 2. PREDIKSI MODEL RANDOM FOREST
@@ -115,7 +116,7 @@ def hitung_prediksi_batch(df_input):
 
 
 # ========================================================
-# 2. NAVIGASI UTAMA (SIDEBAR MENU)
+# 3. NAVIGASI UTAMA (SIDEBAR MENU)
 # ========================================================
 st.sidebar.title("Navigasi Aplikasi")
 menu_terpilih = st.sidebar.radio(
@@ -128,7 +129,7 @@ st.sidebar.caption("Data Analytics © 2026")
 
 
 # ========================================================
-# HALAMAN 1: SIMULASI CABANG BARU (BISA SINGLE / BATCH)
+# HALAMAN 1: SIMULASI CABANG BARU
 # ========================================================
 if menu_terpilih == "Simulasi Cabang Baru":
     st.title("Aplikasi Simulasi Perbandingan 3 Model Forecasting Omzet PGI")
@@ -151,7 +152,7 @@ if menu_terpilih == "Simulasi Cabang Baru":
         df_template = pd.DataFrame(template_data)
         
         st.download_button(
-            label="📥 Unduh Contoh Template Excel",
+            label="📥 Unduh Contoh Template Excel/CSV",
             data=df_template.to_csv(index=False).encode('utf-8'),
             file_name='template_simulasi_pgi.csv',
             mime='text/csv'
@@ -173,14 +174,14 @@ if menu_terpilih == "Simulasi Cabang Baru":
                 
                 if tombol_proses:
                     with st.spinner("Sedang memproses seluruh data dengan 3 model..."):
-                        df_hasil = hitung_prediksi_batch(df_batch)
+                        df_hasil = hitung_prediksi_batch(df_batch, ols_model, scaler_ols, rf_model, scaler_rf, gwr_meta, df_ref)
                     
                     st.markdown("---")
                     st.subheader("📊 Hasil Prediksi Batch")
                     
-                    # Kolom yang ingin ditampilkan secara ringkas di preview
                     kolom_tampil = []
-                    if 'id_cabang_rencana' in df_hasil.columns: kolom_tampil.append('id_cabang_rencana')
+                    if 'id_cabang_rencana' in df_hasil.columns: 
+                        kolom_tampil.append('id_cabang_rencana')
                     kolom_tampil.extend(['Prediksi_Omzet_OLS', 'Prediksi_Omzet_RF', 'Prediksi_Omzet_GWR', 'Cabang_Terdekat_Ref', 'Jarak_Ref_KM'])
                     
                     st.dataframe(
@@ -192,7 +193,6 @@ if menu_terpilih == "Simulasi Cabang Baru":
                         }), use_container_width=True
                     )
                     
-                    # Download link hasil lengkap
                     st.download_button(
                         label="📥 Unduh Hasil Prediksi Lengkap (.CSV)",
                         data=df_hasil.to_csv(index=False).encode('utf-8'),
@@ -203,13 +203,13 @@ if menu_terpilih == "Simulasi Cabang Baru":
                 st.error(f"Gagal memproses file. Pastikan format kolom sesuai template. Detail Error: {err}")
 
     else:
-        # --- INPUT MANUAL (LOGIKA LAMA ANDA) ---
+        # --- INPUT MANUAL ---
         st.markdown("### Masukkan Parameter Karakteristik Cabang Baru")
         with st.form("simulation_form"):
             col1, col2 = st.columns(2)
             with col1:
                 new_lat = st.number_input("Latitude (Garis Lintang)", value=-6.925914, format="%.6f")
-                new_lon = st.number_input("Longitude (Garis Buku)", value=107.588618, format="%.6f")
+                new_lon = st.number_input("Longitude (Garis Bujur)", value=107.588618, format="%.6f")
                 new_umk = st.number_input("UMK Wilayah Cabang (Rp)", value=4482914)
                 new_penduduk = st.number_input("Jumlah Penduduk di Wilayah", value=94158)
                 new_kemiskinan = st.slider("Proporsi Kemiskinan Wilayah", 0.00, 1.00, 0.04)
@@ -230,7 +230,6 @@ if menu_terpilih == "Simulasi Cabang Baru":
             submitted = st.form_submit_button("Jalankan Kalkulasi Prediksi", type="primary")
 
         if submitted:
-            # Memasukkan input manual ke format DataFrame agar bisa dibaca fungsi batch
             df_manual_input = pd.DataFrame([{
                 'latitude': new_lat, 'longitude': new_lon, 'umk': new_umk, 'penduduk': new_penduduk,
                 'kemiskinan': new_kemiskinan, 'lebar_ruko': new_lebar_ruko, 'jumlah_bangunan': new_jumlah_bangunan,
@@ -240,7 +239,7 @@ if menu_terpilih == "Simulasi Cabang Baru":
                 'kategori_wilayah': kategori_wilayah, 'tipe_jalan': tipe_jalan
             }])
             
-            df_hasil_manual = hitung_prediksi_batch(df_manual_input)
+            df_hasil_manual = hitung_prediksi_batch(df_manual_input, ols_model, scaler_ols, rf_model, scaler_rf, gwr_meta, df_ref)
             row_hasil = df_hasil_manual.iloc[0]
 
             # VISUALISASI HASIL AKHIR
@@ -262,48 +261,83 @@ if menu_terpilih == "Simulasi Cabang Baru":
 
 
 # ========================================================
-# HALAMAN 2: PERFORMA & EVALUASI MODEL (KODE TETAP)
+# HALAMAN 2: PERFORMA & EVALUASI MODEL
 # ========================================================
 elif menu_terpilih == "Performa & Evaluasi Model":
-    # (Bagian evaluasi model di bawah ini tetap sama seperti script asli Anda)
     st.title("Laporan Metrik Performa & Evaluasi Pemodelan")
     st.write("Halaman ini menyajikan validasi hasil evaluasi matematis dan statistik untuk ketiga arsitektur model berdasarkan data historis.")
     
-    tab_ols, tab_rf, tab_gwr = st.tabs([" 1. Baseline MLR (OLS)", " 2. Random Forest Regressor", " 3. Geographically Weighted Regression (GWR)"])
+    tab_ols, tab_rf, tab_gwr = st.tabs([
+        " 1. Baseline MLR (OLS)", 
+        " 2. Random Forest Regressor", 
+        " 3. Geographically Weighted Regression (GWR)"
+    ])
     
     with tab_ols:
         st.header("Multiple Linear Regression - OLS Baseline")
+        st.write("Model global konvensional untuk mengukur pengaruh linier homogen di seluruh cabang.")
+        
         c1, c2, c3 = st.columns(3)
         c1.metric(label="R-squared (R²)", value="0.2179")
         c2.metric(label="MAE", value="Rp 160.364.206,25")
-        st.warning("**Catatan Evaluasi:** Nilai R² yang cenderung rendah (21,79%) membuktikan hubungan faktor pembuat omzet antar wilayah bersifat non-linear dan heterogen spasi.")
+        
+        st.warning("**Catatan Evaluasi:** Nilai R² yang cenderung rendah (21,79%) membuktikan hubungan faktor pembuat omzet antar wilayah bersifat non-linear dan heterogen spasi, sehingga kurang disarankan sebagai acuan tunggal.")
 
     with tab_rf:
         st.header("Random Forest Regressor (Optimized)")
+        st.write("Pendekatan Machine Learning berbasis pohon keputusan non-linear dengan optimasi log-transform target.")
+        
         rf1, rf2 = st.columns(2)
         rf1.metric(label="Final Optimized R-squared", value="0.2675")
         rf2.metric(label="Mean Absolute Error (MAE)", value="Rp 154.615.822,10")
         
+        st.subheader("Variabel Paling Berpengaruh (Feature Importance)")
+        
         fi_data = {
-            'Feature / Variabel Indikator': ['umk', 'jumlah_bangunan', 'lebar_ruko', 'penduduk', 'jumlah_toko_ponsel', 'jumlah_kompetitor', 'jumlah_fasilitas_belanja', 'jarak_pasar', 'kemiskinan', 'jalan_mapped', 'jumlah_restoran', 'jumlah_pasar_tradisional'],
-            'Importance Score': [0.161026, 0.136584, 0.109638, 0.106220, 0.099606, 0.092284, 0.085335, 0.077356, 0.049833, 0.033503, 0.025338, 0.023277]
+            'Feature / Variabel Indikator': [
+                'umk', 'jumlah_bangunan', 'lebar_ruko', 'penduduk', 
+                'jumlah_toko_ponsel', 'jumlah_kompetitor', 'jumlah_fasilitas_belanja', 
+                'jarak_pasar', 'kemiskinan', 'jalan_mapped', 'jumlah_restoran', 'jumlah_pasar_tradisional'
+            ],
+            'Importance Score': [
+                0.161026, 0.136584, 0.109638, 0.106220, 
+                0.099606, 0.092284, 0.085335, 0.077356, 
+                0.049833, 0.033503, 0.025338, 0.023277
+            ]
         }
         df_fi = pd.DataFrame(fi_data)
+        
         col_table, col_chart = st.columns([2, 3])
-        with col_table: st.dataframe(df_fi.style.format({'Importance Score': '{:.4f}'}), use_container_width=True)
-        with col_chart: st.bar_chart(data=df_fi, x='Feature / Variabel Indikator', y='Importance Score', horizontal=True)
+        with col_table:
+            st.dataframe(df_fi.style.format({'Importance Score': '{:.4f}'}), use_container_width=True)
+        with col_chart:
+            st.bar_chart(data=df_fi, x='Feature / Variabel Indikator', y='Importance Score', horizontal=True)
 
     with tab_gwr:
         st.header("Geographically Weighted Regression (GWR) Spasial")
+        st.write("Model tingkat lanjut berbasis koordinat proyeksi bumi yang menghitung parameter lokal secara spesifik di tiap wilayah.")
+        
         g1, g2, g3, g4 = st.columns(4)
         g1.metric(label="R-squared Global (R²)", value="0.3480")
         g2.metric(label="Adjusted R-squared", value="0.2940")
         g3.metric(label="AICc", value="1.975,26")
         g4.metric(label="RMSE Spasial", value="Rp 207.524.678,53")
         
+        st.success("**Kesimpulan Performa Terbaik:** GWR menghasilkan peningkatan akurasi tertinggi dengan nilai **R² mencapai 34,80%**.")
+        
         coef_data = {
-            'Nama Parameter/Variabel': ['Intercept (Konstanta Spasial)', 'umk', 'penduduk', 'kemiskinan', 'jumlah_kompetitor', 'jumlah_pasar_tradisional', 'jarak_pasar', 'lebar_ruko', 'jumlah_bangunan', 'kategori_wilayah_mapped', 'jalan_mapped', 'commercial_hub_index', 'premium_spot_score', 'comp_per_pop'],
-            'Rata-rata Koefisien (Beta)': [-0.1700, 0.3753, -0.0221, 0.0065, 0.1421, 0.0439, 0.0633, 0.2014, -0.0652, 0.0816, -0.0864, 0.2125, -0.0562, -1.3624]
+            'Nama Parameter/Variabel': [
+                'Intercept (Konstanta Spasial)', 'umk', 'penduduk', 'kemiskinan', 
+                'jumlah_kompetitor', 'jumlah_pasar_tradisional', 'jarak_pasar', 
+                'lebar_ruko', 'jumlah_bangunan', 'kategori_wilayah_mapped', 
+                'jalan_mapped', 'commercial_hub_index', 'premium_spot_score', 'comp_per_pop'
+            ],
+            'Rata-rata Koefisien (Beta)': [
+                -0.1700, 0.3753, -0.0221, 0.0065, 
+                0.1421, 0.0439, 0.0633, 0.2014, 
+                -0.0652, 0.0816, -0.0864, 0.2125, 
+                -0.0562, -1.3624
+            ]
         }
         df_coef = pd.DataFrame(coef_data)
         st.table(df_coef)
