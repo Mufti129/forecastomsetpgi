@@ -139,7 +139,7 @@ if menu_terpilih == "Simulasi Cabang Baru":
     # Tombol pilihan metode input agar pengguna bisa memilih fleksibel
     metode_input = st.radio(
         "Pilih Metode Input Parameter Data:", 
-        ["Upload File Batch (Banyak Data)", "Input Manual (Satu-satu seperti dulu)"], 
+        ["Upload File Batch (Banyak Data)", "Input Manual"], 
         horizontal=True
     )
 
